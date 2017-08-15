@@ -23,6 +23,8 @@ namespace lf {
         typedef Distance    difference_type;
         typedef Pointer     pointer;
         typedef Reference   reference;
+        typedef const Pointer const_pointer;
+        typedef const Reference const_reference;
     };
 
     //traits

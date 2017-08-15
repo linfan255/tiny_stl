@@ -37,5 +37,10 @@ int main() {
                                                       << " capacity() = " << copyVec.capacity()
                                                                           << endl;
 
+    lf::vector<int> dupVec;
+    dupVec = copyVec;
+    cout << dupVec.size() << endl;
+    cout << dupVec.capacity() << endl;
+    cout << dupVec.front() << " " <<dupVec.back() << endl;
     return 0;
 }

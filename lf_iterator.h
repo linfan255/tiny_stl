@@ -78,6 +78,31 @@ namespace lf {
         return iterator_category();
     }
 
+    /*******************distance*****************/
+    template<typename InputIterator>
+    inline typename InputIterator::difference_type
+    _distance(InputIterator first, InputIterator last, random_access_iterator_tag) {
+        return last-first;
+    }
+
+    template<typename InputIterator>
+    inline typename InputIterator::difference_type
+    _distance(InputIterator first, InputIterator last, input_iterator_tag) {
+        typename InputIterator::difference_type len;
+        while(first != last) {
+            first++;
+            len++;
+        }
+        return len;
+    }
+
+    template<typename InputIterator>
+    inline typename InputIterator::difference_type
+    distance(InputIterator first, InputIterator last) {
+        typedef typename iterator_traits<InputIterator>::iterator_category category;
+        return _distance(first, last, category());
+    }
+
 }
 
 

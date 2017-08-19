@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <list>
 #include "vector.h"
 #include "allocator.h"
 #include "lf_uninitialized.h"
 #include "lf_algorithm.h"
+#include "lf_list.h"
 
 using namespace std;
 
@@ -14,33 +16,25 @@ void print(const lf::vector<int> vec) {
 }
 
 int main() {
+    lf::list<int> lst1;
+    lf::list<int> lst2;
 
-    lf::vector<int> vec;
-    vec.resize(10, 23);
-    cout << vec.size() << endl;
-    cout << vec.capacity() << endl;
+    lst1.push_back(2);
+    lst1.push_back(5);
+    lst1.push_back(7);
+    lst1.push_back(8);
 
-    vec.insert(vec.begin() + 5, 5, 520);
-    print(vec);
+    lst2.push_back(4);
+    lst2.push_back(6);
+    lst2.push_back(11);
+    lst2.push_back(20);
+    lst2.push_back(23);
 
-    vec.erase(vec.begin());
-    print(vec);
+    lst1.merge(lst2);
+    lst1.reverse();
+    for(auto it = lst1.begin(); it != lst1.end(); it++)
+        cout << *it << " ";
+    cout << endl;
 
-    lf::vector<int> copyVec;
-    copyVec.resize(20);
-    copy(vec.begin(), vec.end(), copyVec.begin());
-    print(copyVec);
-
-    for(int i = 0; i < 10000000; i++)
-        copyVec.push_back(i);
-    cout << "after push 10000000 elements, size() = " << copyVec.size()
-                                                      << " capacity() = " << copyVec.capacity()
-                                                                          << endl;
-
-    lf::vector<int> dupVec;
-    dupVec = copyVec;
-    cout << dupVec.size() << endl;
-    cout << dupVec.capacity() << endl;
-    cout << dupVec.front() << " " <<dupVec.back() << endl;
     return 0;
 }

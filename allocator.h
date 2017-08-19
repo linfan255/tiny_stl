@@ -43,7 +43,7 @@ namespace lf {
     template<typename T>
     void allocator<T>::deallocate(pointer p, size_type n) {
         if(!n)	return;
-        lf_alloc::deallocate(static_cast<void*>(p), n);
+        lf_alloc::deallocate(static_cast<void*>(p), n * sizeof(T));
     }
 
     template<typename T>

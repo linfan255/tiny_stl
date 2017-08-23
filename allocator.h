@@ -40,11 +40,13 @@ namespace lf {
         return static_cast<T*>(lf_alloc::allocate(n * sizeof(T)));
     }
 
+
     template<typename T>
     void allocator<T>::deallocate(pointer p, size_type n) {
         if(!n)	return;
         lf_alloc::deallocate(static_cast<void*>(p), n * sizeof(T));
     }
+
 
     template<typename T>
     void allocator<T>::construct(pointer p, const_reference value) {
@@ -66,6 +68,8 @@ namespace lf {
     void allocator<T>::destroy(pointer p) {
         p->~T();
     }
+
+    /***********************/
 }
 
 

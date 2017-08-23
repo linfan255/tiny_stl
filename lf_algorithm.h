@@ -79,6 +79,51 @@ namespace lf {
         memmove(dst, start, finish-start);
         return dst + (finish - start);
     }
+
+    /***************************copy_backward*************************************************/
+    template <typename BidirectionalIter1, typename BidirectionalIter2>
+    inline BidirectionalIter2 _copy_backward(BidirectionalIter1 first, BidirectionalIter1 last,
+                                            BidirectionalIter2 result) {
+        while(last != first)
+            *--result = *--last;
+        return result;
+    };
+
+    template <typename BidirectionalIter1, typename BidirectionalIter2>
+    inline BidirectionalIter2 _copy_backward_dispatch(BidirectionalIter1 first, BidirectionalIter1 last,
+                                                        BidirectionalIter2 result) {
+        return _copy_backward(first, last, result);
+    };
+
+    template <typename T>
+    inline T* _copy_backward_t(const T* first, const T* last, T* result, _true_type) {
+        std::ptrdiff_t sz = last - first;
+        memmove(result-sz, first, sizeof(T)*sz);
+        return result - sz;
+    }
+
+    template <typename T>
+    inline T* _copy_backward_t(const T* first, const T* last, T* result, _false_type) {
+        return _copy_backward(first, last, result);
+    }
+
+    template <typename T>
+    inline T* _copy_backward_dispatch(T* first, T* last, T* result) {
+        typedef typename type_traits<T>::has_trivial_assignment_operator has_trivial;
+        return _copy_backward_t(first, last, result, has_trivial());
+    }
+
+    template <typename T>
+    inline T* _copy_backward_dispatch(const T* first, const T* last, T* result) {
+        typedef typename type_traits<T>::has_trivial_assignment_operator has_trivial;
+        return _copy_backward_t(first, last, result, has_trivial());
+    }
+
+    template <typename BidirectionalIter1, typename BidirectionalIter2>
+    inline BidirectionalIter2 copy_backward(BidirectionalIter1 first, BidirectionalIter1 last,
+                                            BidirectionalIter2 result) {
+        return _copy_backward_dispatch(first, last, result);
+    };
 }
 
 #endif //TINY_STL_LF_ALGORITHM_H

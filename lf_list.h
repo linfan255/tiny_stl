@@ -250,6 +250,7 @@ namespace lf{
         //将所有的分配内存归还给内存池
         for(iterator it = begin(); it != end(); ++it)
             dealloc_node(it.ptr);
+        dealloc_node(header.ptr);
     }
 
     template<typename T, typename Alloc>
@@ -388,7 +389,7 @@ namespace lf{
 
     template<typename T, typename Alloc>
     void list<T,Alloc>::sort() {
-        
+
     }
 }
 

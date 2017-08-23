@@ -9,6 +9,7 @@
 #include "lf_type_traits.h"
 #include "lf_iterator.h"
 #include "lf_construct.h"
+#include "lf_algorithm.h"
 
 namespace lf{
     /************uninitialized_fill_n*****************/
@@ -66,9 +67,7 @@ namespace lf{
     template <typename InputIterator, typename ForwardIterator>
     inline ForwardIterator _uninitialized_copy_aux(InputIterator start, InputIterator finish,
                                                    ForwardIterator dst, _true_type) {
-        typedef typename iterator_traits<InputIterator>::value_type value_type;
-        memcpy(&*dst, &*start, sizeof(value_type) * (finish - start));
-        return dst + (finish - start);
+        return copy(start, finish, dst);
     }
 
     template <typename InputIterator, typename ForwardIterator>

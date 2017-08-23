@@ -125,7 +125,7 @@ namespace lf {
         iterator& operator+=(difference_type x) {
             difference_type offset = x + (curr - first);    //求出相对于first的偏移量
             if(offset >= 0 && buffer_size() > offset)
-                curr += offset;
+                curr += x;
             else {
                 //如果不在同一个缓冲区中
                 difference_type map_offset = offset > 0 ? (offset / buffer_size()) :
@@ -140,12 +140,12 @@ namespace lf {
             return *this += -x;
         }
 
-        iterator& operator+(difference_type x) {
+        iterator operator+(difference_type x) {
             iterator tmp = *this;
             return tmp += x;
         }
 
-        iterator& operator-(difference_type x) {
+        iterator operator-(difference_type x) {
             iterator tmp = *this;
             return tmp -= x;
         }
@@ -234,6 +234,101 @@ namespace lf {
         void allocate_map(size_type n);
         void reallocate_map(bool add_front);
     };
+
+    template <typename T, typename Alloc, size_t BufSize>
+    typename deque<T,Alloc,BufSize>::iterator
+    deque<T,Alloc,BufSize>::erase(iterator first, iterator last) {
+        if(first == begin() && last == end()) {
+            clear();
+            return begin();
+        }
+
+        difference_type before_num = first - begin();   //删除区间之前的元素个数
+        difference_type after_num = end() - last;       //删除区间之后的元素个数
+
+        if(before_num < after_num) {
+            //如果前面的元素比较少
+            copy_backward(begin(), first, last);
+            iterator new_start = begin() + (last - first);
+            destroy(begin(), new_start);
+
+            for(map_pointer mp = start.map_ptr; mp < new_start.map_ptr; ++mp)
+                data_allocator::deallocate(*mp, buffer_size());
+
+            start = new_start;
+        } else {
+            //如果后面的元素比较少
+            copy(last, end(), first);
+            iterator new_finish = end() - (last - first);
+            destroy(new_finish, end());
+
+            for(map_pointer mp = new_finish.map_ptr + 1; mp <= finish.map_ptr; ++mp)
+                data_allocator::deallocate(*mp, buffer_size());
+
+            finish = new_finish;
+        }
+
+        return start + before_num;
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    typename deque<T,Alloc,BufSize>::iterator
+    deque<T,Alloc,BufSize>::erase(iterator pos) {
+        difference_type num = pos - start;  //在要删除的位置和起始位置之间有多少个元素
+        iterator next_pos = pos;
+        ++next_pos;
+
+        if(num > size() / 2) {
+            //如果目标位置位于后半部分
+            copy(next_pos, end(), pos);
+            pop_back();
+        } else {
+            //如果目标位置位于前半部分
+            copy_backward(begin(), pos, next_pos);
+            pop_front();
+        }
+        return begin() + num;
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    void deque<T,Alloc,BufSize>::clear() {
+        for(map_pointer mp = start.map_ptr+1; mp < finish.map_ptr; ++mp) {
+            destroy(*mp, *mp + buffer_size());
+            data_allocator::deallocate(*mp, buffer_size());
+        }   //首先清理除了头尾之外的内容
+
+        if(start.map_ptr == finish.map_ptr) {
+            destroy(start.curr, finish.curr);   //当只有一个缓冲区的时候保留
+        } else {
+            destroy(start.curr, start.last);
+            destroy(finish.first, finish.curr);
+            data_allocator::deallocate(finish.first, buffer_size()); //头部的缓冲区不释放，保留！
+        }
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    void deque<T,Alloc,BufSize>::pop_front() {
+        if(start.curr < start.last - 1) {
+            destroy(start.curr++);
+        } else {
+            destroy(start.curr);
+            data_allocator::deallocate(start.first, buffer_size());
+            start.switch_map(start.map_ptr + 1);
+            start.curr = start.first;
+        }
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    void deque<T,Alloc,BufSize>::pop_back() {
+        if(finish.curr > finish.first) {
+            destroy(--finish.curr);
+        } else {
+            data_allocator::deallocate(finish.first, buffer_size());
+            finish.switch_map(finish.map_ptr - 1);
+            finish.curr = finish.last;
+            destroy(--finish.curr);
+        }
+    }
 
 
     template <typename T, typename Alloc, size_t BufSize>
@@ -393,7 +488,34 @@ namespace lf {
     template <typename T, typename Alloc, size_t BufSize>
     typename deque<T,Alloc,BufSize>::iterator
     deque<T,Alloc,BufSize>::insert(iterator pos, const value_type &val) {
+        if(pos == begin()) {
+            push_front(val);
+            return start;
+        }
 
+        if(pos == end()) {
+            push_back(val);
+            iterator tmp = finish;
+            return --tmp;
+        }
+
+        //如果是安插在中间
+        difference_type before_num = pos - begin(); //安插点之前的元素数目
+        difference_type after_num = end() - pos;
+        if(before_num < after_num) {
+            //前面的元素数目比较少
+            iterator old_start = start;
+            push_front(front());
+            copy(old_start, pos, start);
+            --pos;
+            *pos = val;
+        } else {
+            iterator old_finish = finish;
+            push_back(back());
+            copy_backward(pos, old_finish, finish);
+            *pos = val;
+        }
+        return pos;
     }
 }
 

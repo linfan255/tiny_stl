@@ -11,6 +11,15 @@
 
 
 namespace lf {
+    /*********************************实现equal**************************************************/
+    template <typename InputIter1, typename InputIter2>
+    inline bool equal(InputIter1 first, InputIter1 last, InputIter2 first_other) {
+        for(; first != last; ++first, ++first_other)
+            if(*first != *first_other)
+                return false;
+        return true;
+    }
+
     /********************************实现copy*******************************************/
     template <typename InputIterator, typename OutputIterator, typename Difference>
     inline OutputIterator __copy_d(InputIterator start, InputIterator finish, OutputIterator dst,

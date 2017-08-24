@@ -211,6 +211,8 @@ namespace lf {
 
         reference operator[](size_type i) { return start[i]; }
         const_reference operator[](size_type i) const { return start[i]; }
+        bool operator==(const deque& rhs) const;
+        bool operator!=(const deque& rhs) const;
 
         reference front() { return *start; }
         const_reference front() const { return *start; }
@@ -516,6 +518,16 @@ namespace lf {
             *pos = val;
         }
         return pos;
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    bool deque<T,Alloc,BufSize>::operator==(const deque<T,Alloc,BufSize> &rhs) const {
+        return size() == rhs.size() && equal(rhs.begin(), rhs.end(), begin());
+    }
+
+    template <typename T, typename Alloc, size_t BufSize>
+    bool deque<T,Alloc,BufSize>::operator!=(const deque<T,Alloc,BufSize> &rhs) const {
+        return size() != rhs.size() || !equal(rhs.begin(), rhs.end(), begin());
     }
 }
 

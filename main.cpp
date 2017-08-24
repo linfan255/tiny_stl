@@ -7,6 +7,7 @@
 #include "lf_algorithm.h"
 #include "lf_list.h"
 #include "lf_deque.h"
+#include "lf_stack.h"
 
 using namespace std;
 
@@ -18,30 +19,20 @@ void print(const lf::vector<int> vec) {
 
 int main() {
 
-    lf::deque<int> dq;
-    for(int i = 0; i < 1000; i++)
-        dq.push_front(i);
+    lf::stack<double> st;
+    cout << st.size() << endl;
 
-    for(auto it = dq.begin(); it != dq.end(); ++it)
-        cout << *it << endl;
-    cout << dq.size() << endl;
+    st.push(1);
+    st.push(3);
+    st.push(5);
+    st.push(7);
 
-    for(int i = 0; i < 990; i++)
-        dq.pop_back();
+    cout << st.size() << endl;
+    cout << st.top() << endl;
 
-    for(auto it = dq.begin(); it != dq.end(); ++it)
-        cout << *it << endl;
-    cout << dq.size() << endl << endl;
-
-    dq.erase(dq.begin() + 1, dq.begin() + 8);
-    for(auto it = dq.begin(); it != dq.end(); ++it)
-        cout << *it << endl;
-    cout << dq.size() << endl << endl;
-
-    dq.insert(dq.begin() + 1, 20);
-    for(auto it = dq.begin(); it != dq.end(); ++it)
-        cout << *it << endl;
-    cout << dq.size() << endl << endl;
-
+    st.pop();   cout << st.top() << endl;
+    st.pop();   cout << st.top() << endl;
+    st.pop();   cout << st.top() << endl;
+    cout << st.size() << endl;
     return 0;
 }

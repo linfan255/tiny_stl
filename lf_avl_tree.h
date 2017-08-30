@@ -16,11 +16,9 @@ namespace lf {
 
         value_type data;
         node_ptr lch, rch, parent;
+        int high;
     };
 
-    inline bool operator==(const _tree_iterator& lhs, const _tree_iterator& rhs) {
-        return lhs.ptr == rhs.ptr;
-    }
 
     template <typename T, typename Ref, typename Pointer>
     struct _tree_iterator: public iterator<T, bidirectional_iterator_tag> {
@@ -44,11 +42,19 @@ namespace lf {
         _tree_iterator(node_ptr x): ptr(x) {}
         _tree_iterator(const iterator& other): ptr(other.ptr) {}
 
-        reference operator*() { return ptr->data; }
+        reference operator*()  { return ptr->data; }
         pointer operator->() { return &(operator*()); }
 
         const_reference operator*() const { return ptr->data; }
         const_pointer operator->() const { return &(operator*()); }
+
+        bool operator==(const self& rhs) const {
+            return ptr == rhs.ptr;
+        }
+
+        bool operator!=(const self& rhs) const {
+            return ptr != rhs.ptr;
+        }
 
         //递增 递减
         self& operator++() {
@@ -154,8 +160,13 @@ namespace lf {
         link_type double_rotate_with_left(link_type x);
         link_type double_rotate_with_right(link_type x);
 
+        int height(link_type x) { return x == nullptr ? -1 : x->high; }
+        value_type find_min() const;
+        value_type find_max() const;
+
         void init_tree();
         void destroy_tree(link_type rt);
+        link_type _insert_aux(const value_type& x, link_type rt, link_type p, bool unique);
 
     public:
         avl_tree(): header(nullptr), sz(0), key_cmp(Compare()) { init_tree(); }
@@ -169,8 +180,8 @@ namespace lf {
         bool empty() const { return sz == 0; }
         size_type size() const { return sz; }
 
-        value_type front() { return header->lch->data; }
-        value_type back() { return header->rch->data; }
+        value_type front() { return find_min(); }
+        value_type back() { return find_max(); }
 
         void clear();
         iterator erase(iterator pos);
@@ -182,7 +193,88 @@ namespace lf {
 
     /********************************* implement ***********************************/
     template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::value_type
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::find_min() const {
+        if(!empty()) {
+            link_type p = header->parent;
+            while(p->lch != nullptr)
+                p = p->lch;
+            return p->data;
+        }
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::value_type
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::find_max() const {
+        if(!empty()) {
+            link_type p = header->parent;
+            while(p->rch != nullptr)
+                p = p->rch;
+            return p->data;
+        }
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::link_type
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::_insert_aux(const value_type &x,
+                                                              link_type rt, link_type p, bool unique) {
+        if(rt == nullptr) {
+            rt = allocate_node(x);
+            rt->parent = p;
+            sz++;
+
+            return rt;
+        }
+
+        if(unique && x == rt->data) //如果插入方式是unique的话且与当前节点相同值，则插入失败
+            return header;
+
+        if(key_cmp(KeyOfValue()(x), KeyOfValue()(rt->data))) {
+            //新值小于当前节点的值，往左
+            //std::cout << KeyOfValue()(x) << " small than " << KeyOfValue()(rt->data) << std::endl;
+            rt->lch = _insert_aux(x, rt->lch, rt, unique);
+            if(height(rt->lch) - height(rt->rch) == 2)
+                if(key_cmp(KeyOfValue()(x), KeyOfValue()(rt->lch->data)))
+                    rt = single_rotate_with_left(rt);
+                else
+                    rt = double_rotate_with_left(rt);
+        }
+        else {
+            rt->rch = _insert_aux(x, rt->rch, rt, unique);
+            if(height(rt->rch) - height(rt->lch) == 2)
+                if(key_cmp(KeyOfValue()(rt->rch->data), KeyOfValue()(x)))
+                    rt = single_rotate_with_right(rt);
+                else
+                    rt = double_rotate_with_right(rt);
+        }
+
+        rt->high = (height(rt->lch) > height(rt->rch) ? height(rt->lch) : height(rt->rch)) + 1;
+        return rt;
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::iterator
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::insert_unique(const value_type &x) {
+        std::cout << "insert unique " << x << std::endl;
+        return header->parent = _insert_aux(x, header->parent, header, true);
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::iterator
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::insert_equal(const value_type &x) {
+        return header->parent = _insert_aux(x, header->parent, header, false);
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::destroy_tree(link_type rt) {
+        if(rt->lch != nullptr)  destroy_tree(rt->lch);
+        if(rt->rch != nullptr)  destroy_tree(rt->rch);
+        deallocate_node(rt);
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
     void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::clear() {
+        sz = 0;
         destroy_tree(header->parent);
     }
 
@@ -198,19 +290,20 @@ namespace lf {
         header->parent = nullptr;
         header->lch = header;
         header->rch = header;
+        header->high = 0;
     }
 
     template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
     _tree_node<Value>*
     avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::double_rotate_with_right(link_type x) {
-        single_rotate_with_left(x->rch);
+        x->rch = single_rotate_with_left(x->rch);
         return single_rotate_with_right(x);
     }
 
     template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
     _tree_node<Value>*
     avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::double_rotate_with_left(link_type x) {
-        single_rotate_with_right(x->lch);
+        x->lch = single_rotate_with_right(x->lch);
         return single_rotate_with_left(x);
     }
 
@@ -220,6 +313,9 @@ namespace lf {
         link_type rnode = x->rch;
         x->rch = rnode->lch;
         rnode->lch = x;
+
+        x->high = (height(x->lch) > height(x->rch) ? height(x->lch) : height(x->rch)) + 1;
+        rnode->high = (height(rnode->rch) > height(x) ? height(rnode->rch) : height(x)) + 1;
         return rnode;
     }
 
@@ -229,6 +325,9 @@ namespace lf {
         link_type lnode = x->lch;
         x->lch = lnode->rch;
         lnode->rch = x;
+
+        x->high = (height(x->lch) > height(x->rch) ? height(x->lch) : height(x->rch)) + 1;
+        lnode->high = (height(lnode->lch) > height(x) ? height(lnode->lch) : height(x)) + 1;
         return lnode;
     }
 
@@ -247,6 +346,8 @@ namespace lf {
         } catch (...) {
             data_allocator::deallocate(p);
         }
+        p->high = 0;
+        p->lch = p->rch = nullptr;
         return p;
     }
 }

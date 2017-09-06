@@ -37,15 +37,15 @@ int main() {
 
 
     lf::avl_tree<int, int, identity<int>, mless<int> > at;
-    for(int i = 1; i <= 10; i++)
+    for(int i = 1; i <= 1000; i++)
         at.insert_unique(i);
 
-    cout << at.front() << endl;
-    cout << at.back() << endl;
-    cout << at.size() << endl;
+    for(auto it = at.begin(); it != at.end(); it++)
+        cout << *it << endl;
 
-    lf::avl_tree<int, int, identity<int>, mless<int>>::iterator it;
-    for(it = at.begin(); it != at.end(); ++it)
+    auto it = at.end();
+    it--;
+    for(; it != at.begin(); --it)
         cout << *it << endl;
     return 0;
 }

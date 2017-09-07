@@ -8,17 +8,19 @@
 #include "lf_function.h"
 #include "allocator.h"
 #include "lf_avl_tree.h"
+#include "lf_pair.h"
 
 namespace lf {
 
-    template <typename T, typename Compare = lf::less<T>, typename Alloc = allocator<T> >
+    template <typename Key, typename Value, typename Compare = lf::less<Value>, typename Alloc = allocator<Value> >
     class map {
     public:
-        typedef T value_type;
+        typedef Key key_type;
+        typedef lf::pair<key_type, Value> value_type;
         typedef Compare compare;
-        typedef allocator<T> data_allocator;
+        typedef allocator<value_type> data_allocator;
 
-        typedef avl_tree<value_type, value_type, identity<value_type>,
+        typedef avl_tree<key_type, value_type, lf::getPairKey<value_type>,
         Compare, Alloc> container;
         typedef typename container::iterator iterator;
         typedef typename container::const_iterator const_iterator;
@@ -58,14 +60,15 @@ namespace lf {
         }
     };
 
-    template <typename T, typename Compare = lf::less<T>, typename Alloc = allocator<T> >
+    template <typename Key, typename Value, typename Compare = lf::less<Value>, typename Alloc = allocator<Value> >
     class multimap {
     public:
-        typedef T value_type;
+        typedef Key key_type;
+        typedef lf::pair<key_type, Value> value_type;
         typedef Compare compare;
-        typedef allocator<T> data_allocator;
+        typedef allocator<value_type> data_allocator;
 
-        typedef avl_tree<value_type, value_type, identity<value_type>,
+        typedef avl_tree<key_type, value_type, lf::getPairKey<value_type>,
                 Compare, Alloc> container;
         typedef typename container::iterator iterator;
         typedef typename container::const_iterator const_iterator;

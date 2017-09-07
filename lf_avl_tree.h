@@ -209,7 +209,7 @@ namespace lf {
             return;
 
 
-        if(x->data == rt->data) {
+        if(KeyOfValue()(x->data) == KeyOfValue()(rt->data)) {
             if(rt->rch && rt->lch) {
                 int random_choose = size() % 2;
                 link_type new_root = random_choose == 0 ? find_max_node(rt->lch) :
@@ -359,13 +359,13 @@ namespace lf {
             rt->isHeader = false;
             sz++;
 
-            if(p == header || x < header->lch->data) header->lch = rt;
-            if(p == header || x > header->rch->data) header->rch = rt;
+            if(p == header || KeyOfValue()(x) < KeyOfValue()(header->lch->data)) header->lch = rt;
+            if(p == header || KeyOfValue()(x) > KeyOfValue()(header->rch->data)) header->rch = rt;
 
             return rt;
         }
 
-        if(unique && x == rt->data) //如果插入方式是unique的话且与当前节点相同值，则插入失败
+        if(unique && KeyOfValue()(x) == KeyOfValue()(rt->data)) //如果插入方式是unique的话且与当前节点相同值，则插入失败
             return rt;
 
         if(key_cmp(KeyOfValue()(x), KeyOfValue()(rt->data))) {

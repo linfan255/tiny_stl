@@ -10,6 +10,7 @@
 #include "lf_stack.h"
 #include "lf_avl_tree.h"
 #include "lf_set.h"
+#include "lf_map.h"
 
 using namespace std;
 
@@ -36,12 +37,15 @@ struct mless {
 
 int main() {
 
-    lf::multiset<int> s;
-    for(int i = 100; i >= 0; --i)
-        s.insert(5);
+    lf::map<int,double> m;
+    int var1 = 1;
+    double var2 = 1.50;
+    for(int i = 0; i < 100000; i++)
+        m.insert(lf::pair<int,double>(i + var1, i + var2));
 
-    for(auto it = s.begin(); it != s.end(); ++it)
-        cout << *it << endl;
+    m.erase(m.begin());
+    for(auto it = m.begin(); it != m.end(); ++it)
+        cout << it->first << "--" << it->second << endl;
 
     return 0;
 }

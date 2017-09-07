@@ -19,6 +19,14 @@ namespace lf {
             return x;
         }
     };
+
+    template <typename pair_type>
+    struct getPairKey {
+        const typename pair_type::first_type&
+        operator()(const pair_type& x) const {
+            return x.first;
+        }
+    };
 }
 
 #endif //TINY_STL_LF_FUNCTION_H

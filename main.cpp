@@ -40,16 +40,37 @@ int main() {
     for(int i = 1; i <= 5; i++)
         at.insert_unique(i);
 
+    cout << "size=" << at.size() << endl;
+
     for(auto it = at.begin(); it != at.end(); it++)
         cout << *it << " ";
     cout << endl;
 
-    auto it = at.begin();
-    it++; it++;
+    auto it = at.end();
+    it--;
     at.erase(it);
 
     for(auto it = at.begin(); it != at.end(); it++)
         cout << *it << " ";
     cout << endl;
+
+    it = at.end();
+    at.erase(--it);
+    for(auto it = at.begin(); it != at.end(); it++)
+        cout << *it << " ";
+    cout << endl;
+
+    it = at.end();
+    at.erase(--it);
+    for(auto it = at.begin(); it != at.end(); it++)
+        cout << *it << " ";
+    cout << endl;
+
+    at.erase(at.begin());
+    for(auto it = at.begin(); it != at.end(); it++)
+        cout << *it << " ";
+    cout << endl;
+
+    cout << at.size() << endl;
     return 0;
 }

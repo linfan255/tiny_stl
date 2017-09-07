@@ -208,7 +208,6 @@ namespace lf {
         if(rt == nullptr)
             return;
 
-        std::cout << "curr node is " << rt->data << " erase " << x->data << std::endl;
 
         if(x->data == rt->data) {
             if(rt->rch && rt->lch) {
@@ -236,12 +235,20 @@ namespace lf {
                 }
 
                 if(rt->lch != nullptr) {
-                    rt = rt->lch;
-                    rt->parent = p;
+                    if(rt == p->lch) {
+                        p->lch = rt->lch;
+                    } else {
+                        p->rch = rt->lch;
+                    }
+                    rt->lch->parent = p;
                 }
                 else if(rt->rch != nullptr){
-                    rt = rt->rch;
-                    rt->parent = p;
+                    if(rt == p->lch) {
+                        p->lch = rt->rch;
+                    } else {
+                        p->rch = rt->rch;
+                    }
+                    rt->rch->parent = p;
                 }
                 else {
                     if(p->lch == rt)    p->lch = nullptr;
@@ -282,7 +289,6 @@ namespace lf {
 
     template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
     void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::erase(iterator pos) {
-        std::cout << "erase " << pos.ptr->data << std::endl;
         _erase_aux(pos.ptr, header->parent, header);
     }
 

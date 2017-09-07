@@ -165,9 +165,16 @@ namespace lf {
         int height(link_type x) { return x == nullptr ? -1 : x->high; }
         iterator leftmost();
 
+        link_type find_min_node(link_type it) const;
+        link_type find_max_node(link_type it) const;
+
+        value_type find_min() const;
+        value_type find_max() const;
+
         void init_tree();
         void destroy_tree(link_type rt);
         link_type _insert_aux(const value_type& x, link_type rt, link_type p, bool unique);
+        void _erase_aux(link_type x, link_type rt, link_type p);
 
     public:
         avl_tree(): header(nullptr), sz(0), key_cmp(Compare()) { init_tree(); }
@@ -185,20 +192,117 @@ namespace lf {
         value_type back() { return find_max(); }
 
         void clear();
-        iterator erase(iterator pos);
-        iterator erase(iterator start, iterator finish);
+        void erase(iterator pos);
 
         iterator insert_unique(const value_type& x);
         iterator insert_equal(const value_type& x);
 
-        value_type find_min() const;
-        value_type find_max() const;
 
         void traverse_tree();   //遍历整个二叉树，只作为测试用
         void _traverse(link_type x);
     };
 
     /********************************* implement ***********************************/
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::_erase_aux(link_type x, link_type rt, link_type p) {
+        if(rt == nullptr)
+            return;
+
+        std::cout << "curr node is " << rt->data << " erase " << x->data << std::endl;
+
+        if(x->data == rt->data) {
+            if(rt->rch && rt->lch) {
+                int random_choose = size() % 2;
+                link_type new_root = random_choose == 0 ? find_max_node(rt->lch) :
+                                     find_min_node(rt->rch);
+                rt->data = new_root->data;
+
+                if(random_choose == 0)  _erase_aux(new_root, rt->lch, rt);
+                else                    _erase_aux(new_root, rt->rch, rt);
+                return;
+            }
+            else {
+                //如果只有一个子树或者没有子树
+                link_type tmp = rt;
+
+                //更新最大值和最小值
+                if(rt == header->lch) {
+                    if(rt->rch) header->lch = rt->rch;
+                    else        header->lch = p;
+                }
+                if(rt == header->rch) {
+                    if(rt->lch) header->rch = rt->lch;
+                    else        header->rch = p;
+                }
+
+                if(rt->lch != nullptr) {
+                    rt = rt->lch;
+                    rt->parent = p;
+                }
+                else if(rt->rch != nullptr){
+                    rt = rt->rch;
+                    rt->parent = p;
+                }
+                else {
+                    if(p->lch == rt)    p->lch = nullptr;
+                    if(p->rch == rt)    p->rch = nullptr;
+                }
+
+                deallocate_node(tmp);
+                tmp = nullptr;
+                --sz;
+            }
+        }
+        else if(key_cmp(KeyOfValue()(x->data), KeyOfValue()(rt->data))) {
+            //删除的节点在当前节点左子树中
+            _erase_aux(x, rt->lch, rt);
+            return;
+        }
+        else {
+            //如果删除的节点在当前节点的右子树当中
+            _erase_aux(x, rt->rch, rt);
+            return;
+        }
+
+        //对失衡的情况进行调整
+        if(rt) {
+            rt->high = std::max(height(rt->lch), height(rt->rch)) + 1;
+            if(height(rt->lch) - height(rt->rch) == 2) {
+                //左子树过高
+                if(rt->lch->lch)    rt = single_rotate_with_left(rt);
+                else                rt = double_rotate_with_left(rt);
+            }
+            else if(height(rt->rch) - height(rt->lch) == 2) {
+                //右子树过高
+                if(rt->rch->rch)    rt = single_rotate_with_right(rt);
+                else                rt = double_rotate_with_right(rt);
+            }
+        }
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::erase(iterator pos) {
+        std::cout << "erase " << pos.ptr->data << std::endl;
+        _erase_aux(pos.ptr, header->parent, header);
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::link_type
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::find_max_node(link_type it) const {
+        while(it->rch) {
+            it = it->rch;
+        }
+        return it;
+    }
+
+    template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
+    typename avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::link_type
+    avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::find_min_node(link_type it) const {
+        while(it->lch)
+            it = it->lch;
+        return it;
+    }
+
     template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
     void avl_tree<Key,Value,KeyOfValue,Compare,Alloc>::_traverse(link_type x) {
         if(x != nullptr) {

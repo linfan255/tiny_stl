@@ -9,6 +9,7 @@
 #include "lf_deque.h"
 #include "lf_stack.h"
 #include "lf_avl_tree.h"
+#include "lf_set.h"
 
 using namespace std;
 
@@ -35,42 +36,12 @@ struct mless {
 
 int main() {
 
+    lf::multiset<int> s;
+    for(int i = 100; i >= 0; --i)
+        s.insert(5);
 
-    lf::avl_tree<int, int, identity<int>, mless<int> > at;
-    for(int i = 1; i <= 5; i++)
-        at.insert_unique(i);
+    for(auto it = s.begin(); it != s.end(); ++it)
+        cout << *it << endl;
 
-    cout << "size=" << at.size() << endl;
-
-    for(auto it = at.begin(); it != at.end(); it++)
-        cout << *it << " ";
-    cout << endl;
-
-    auto it = at.end();
-    it--;
-    at.erase(it);
-
-    for(auto it = at.begin(); it != at.end(); it++)
-        cout << *it << " ";
-    cout << endl;
-
-    it = at.end();
-    at.erase(--it);
-    for(auto it = at.begin(); it != at.end(); it++)
-        cout << *it << " ";
-    cout << endl;
-
-    it = at.end();
-    at.erase(--it);
-    for(auto it = at.begin(); it != at.end(); it++)
-        cout << *it << " ";
-    cout << endl;
-
-    at.erase(at.begin());
-    for(auto it = at.begin(); it != at.end(); it++)
-        cout << *it << " ";
-    cout << endl;
-
-    cout << at.size() << endl;
     return 0;
 }

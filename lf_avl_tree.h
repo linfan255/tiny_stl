@@ -381,7 +381,8 @@ namespace lf {
         else {
             rt->rch = _insert_aux(x, rt->rch, rt, unique);
             if(height(rt->rch) - height(rt->lch) == 2)
-                if(key_cmp(KeyOfValue()(rt->rch->data), KeyOfValue()(x)))
+                if(KeyOfValue()(rt->rch->data) == KeyOfValue()(x) ||
+                        key_cmp(KeyOfValue()(rt->rch->data), KeyOfValue()(x)))
                     rt = single_rotate_with_right(rt);
                 else
                     rt = double_rotate_with_right(rt);
